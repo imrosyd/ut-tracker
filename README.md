@@ -117,7 +117,6 @@ UT Tracker adalah aplikasi statis sehingga dapat di-host di Vercel, Netlify, Fir
 ```bash
 npm install
 npm run build:css
-# deploy seluruh isi repositori (khususnya folder public/)
 ```
 
 ### ▲ Vercel
@@ -137,17 +136,6 @@ npm run build:css
    - **Build command**: `npm run build:css`
    - **Publish directory**: `public`
 5. Deploy → Netlify otomatis menyajikan `public/`
-
-### 🔥 Firebase Hosting
-1. `npm install`
-2. `npm run build:css`
-3. Instal CLI Firebase: `npm install -g firebase-tools`
-4. `firebase login`
-5. `firebase init hosting`
-   - Pilih proyek Firebase
-   - **Public directory**: `public`
-   - Jawab *No* untuk SPA rewrite (kecuali ingin single-page routing)
-6. `firebase deploy`
 
 > 💡 Selama `npm run build:css` dijalankan sebelum deploy, semua aset sudah berada di `public/` tanpa langkah tambahan.
 
