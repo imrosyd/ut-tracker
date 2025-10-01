@@ -1,0 +1,87 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tracker-card,
+.form-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tracker-card:hover,
+.form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 45px -28px rgba(15, 23, 42, 0.45);
+}
+
+.dark .tracker-card:hover,
+.dark .form-card:hover {
+    box-shadow: 0 20px 45px -28px rgba(148, 163, 184, 0.35);
+}
+
+.task-input:checked + label {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+.theme-icon {
+    transition: transform 0.3s ease-in-out;
+}
+
+.theme-icon.sun {
+    transform: scale(1) rotate(0deg);
+}
+
+.theme-icon.moon {
+    transform: scale(0) rotate(90deg);
+}
+
+.dark .theme-icon.sun {
+    transform: scale(0) rotate(-90deg);
+}
+
+.dark .theme-icon.moon {
+    transform: scale(1) rotate(0deg);
+}
+
+.empty-state {
+    background: rgba(248, 250, 252, 0.75);
+}
+
+.dark .empty-state {
+    background: rgba(30, 41, 59, 0.75);
+}
+
+.tracker-card:target {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 4px;
+}
+
+.dark .tracker-card:target {
+    outline-color: rgba(96, 165, 250, 0.45);
+}
