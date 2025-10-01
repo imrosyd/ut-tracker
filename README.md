@@ -123,7 +123,7 @@ npm run build:css
 ### ▲ Vercel
 1. `npm install`
 2. `npm run build:css`
-3. Buat project baru di Vercel, pilih repo **imrosyd/ut-tracker**
+3. Buat project baru di Vercel, pilih repo `https://github.com/imrosyd/ut-tracker`
 4. Build settings:
    - **Build Command**: `npm run build:css`
    - **Output Directory**: `public`
@@ -132,7 +132,7 @@ npm run build:css
 ### 🌐 Netlify
 1. `npm install`
 2. `npm run build:css`
-3. Di Netlify pilih **New site from Git** lalu hubungkan repositori
+3. Di Netlify pilih **New site from Git** lalu hubungkan repositori `https://github.com/imrosyd/ut-tracker`
 4. Build settings:
    - **Build command**: `npm run build:css`
    - **Publish directory**: `public`
