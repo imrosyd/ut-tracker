@@ -4,14 +4,14 @@
 
 ### 🎓 Dashboard Pembelajaran Modern untuk Mahasiswa Universitas Terbuka
 
-*Kelola mata kuliah, progres tutorial, praktik, dan target UAS dalam satu aplikasi web statis yang elegan.*
+*Pantau mata kuliah, progres tutorial, praktik, dan target UAS dalam satu aplikasi web statis yang ringan dan elegan.*
 
-[![HTML](https://img.shields.io/badge/HTML-5-e54d26?logo=html5&logoColor=white)](https://developer.mozilla.org/docs/Web/HTML)
+[![Repo](https://img.shields.io/badge/GitHub-imrosyd/ut--tracker-181717?logo=github&logoColor=white)](https://github.com/imrosyd/ut-tracker)
+[![HTML](https://img.shields.io/badge/HTML-5-e34f26?logo=html5&logoColor=white)](https://developer.mozilla.org/docs/Web/HTML)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![LocalStorage](https://img.shields.io/badge/Storage-LocalStorage-8b5cf6)](https://developer.mozilla.org/docs/Web/API/Window/localStorage)
-[![Status](https://img.shields.io/badge/Status-Static%20Web-blue)](#-deployment)
 
-[🚀 Quick Start](#-quick-start) • [📖 Features](#-features) • [🖥️ Localhost 3333](#%EF%B8%8F-local-installation-port-3333) • [☁️ Deployment](#%EF%B8%8F-deployment) • [📂 Project Structure](#-project-structure)
+[🚀 Quick Start](#-quick-start) • [📖 Features](#-features) • [🛠️ Dev Setup](#%EF%B8%8F-local-installation-dengan-nodejs) • [☁️ Deployment](#%EF%B8%8F-deployment) • [📂 Structure](#-project-structure)
 
 ---
 
@@ -19,14 +19,7 @@
 
 ## 🎯 What is UT Tracker?
 
-UT Tracker adalah **aplikasi web statis** untuk memantau perjalanan studi di Universitas Terbuka. Aplikasi ini menyatukan pencatatan mata kuliah, progres tutorial (presensi, diskusi, tugas), kegiatan praktik, dan perencanaan UAS — lengkap dengan mode terang/gelap yang mengikuti sistem dan dapat diganti manual.
-
-<div align="center">
-
-### ✨ Didesain untuk
-**📚 Mahasiswa UT** • **🗂️ Pengelola Studi Mandiri** • **📈 Pemantau IP**
-
-</div>
+UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. Aplikasi ini membantu mengelola daftar mata kuliah, memantau presensi & diskusi tutorial, mencatat tugas/latihan praktik, dan menyiapkan target UAS — semuanya tersimpan aman di perangkat melalui `localStorage`.
 
 ## ✨ Features
 
@@ -34,20 +27,20 @@ UT Tracker adalah **aplikasi web statis** untuk memantau perjalanan studi di Uni
 <tr>
 <td width="50%">
 
-### 🧭 Manajemen Akademik
-- Tambah mata kuliah dengan skema penilaian beragam
-- Hitung otomatis total mata kuliah, SKS, dan IP
-- Checklist modul UAS berdasarkan jumlah SKS
-- Catatan diskusi per sesi tutorial
+### 🧭 Produktivitas Akademik
+- Tambah mata kuliah dengan berbagai skema penilaian
+- Hitung otomatis total mata kuliah, total SKS, dan IP
+- Checklist modul UAS yang menyesuaikan jumlah SKS (1 SKS = 3 modul)
+- Kolom catatan diskusi per sesi tutorial
 
 </td>
 <td width="50%">
 
 ### 🎨 Pengalaman Modern
-- Antar muka responsif dan minimalis
-- Mode gelap/terang sesuai preferensi sistem
-- Transisi halus dan navigasi kursus dinamis
-- Penyimpanan lokal menggunakan `localStorage`
+- Antarmuka minimalis dan responsif
+- Mode terang/gelap mengikuti sistem & bisa diganti manual
+- Navigasi mata kuliah dan filter kategori secara instan
+- Transisi halus serta penyimpanan data lokal tanpa backend
 
 </td>
 </tr>
@@ -55,53 +48,55 @@ UT Tracker adalah **aplikasi web statis** untuk memantau perjalanan studi di Uni
 
 ## 🚀 Quick Start
 
-### 1️⃣ Clone Repositori
+### Cara tercepat (tanpa instalasi tambahan)
+1. Buka repositori resmi: **https://github.com/imrosyd/ut-tracker**
+2. Klik **Code → Download ZIP** atau jalankan:
+   ```bash
+   git clone https://github.com/imrosyd/ut-tracker.git
+   cd ut-tracker
+   ```
+3. Masuk ke folder `public/` dan buka `index.html` di peramban modern (Chrome/Edge/Firefox/Safari)
+
+> Semua CSS & JavaScript sudah siap pakai di `public/assets`, jadi tidak perlu perintah build jika hanya ingin langsung menggunakan aplikasinya.
+
+### Menjalankan server lokal (opsional)
+```bash
+npx serve public -l 3333   # Akses di http://localhost:3333
+```
+> Ingin permanen? Instal global `serve` (`npm install -g serve`) lalu jalankan `serve public -l 3333`.
+
+## 🛠️ Local Installation dengan Node.js
+
+Gunakan langkah berikut bila Anda ingin memodifikasi Tailwind atau JavaScript. Prasyarat: **Node.js 16+** dan **npm**.
+
 ```bash
 git clone https://github.com/imrosyd/ut-tracker.git
 cd ut-tracker
+
+npm install        # jalankan sekali di awal
+npm run build:css  # ulangi setiap kali mengubah kelas Tailwind
+npx serve public -l 3333   # jalankan server lokal (opsional)
 ```
 
-### 2️⃣ Instal Dependensi & Build CSS
-```bash
-npm install
-npm run build:css
-```
+Perintah `npm run build:css` akan menghasilkan ulang `public/assets/css/tailwind.build.css` dari `assets/css/tailwind.css` menggunakan Tailwind CLI + PostCSS.
 
-### 3️⃣ Jalankan Secara Lokal
-- Buka langsung `public/index.html` di peramban **atau**
-- Jalankan server statis:
-  ```bash
-  npx serve public -l 3333
-  ```
-
-> 🔁 **Tips:** Pasang global `serve` (`npm install -g serve`) jika ingin perintah permanen `serve public -l 3333`.
-
-## 🖥️ Local Installation (Port 3333)
-
-Gunakan langkah berikut bila ingin selalu memakai port `http://localhost:3333`:
-
-```bash
-npm install           # sekali di awal
-npm run build:css     # ulangi saat mengubah kelas Tailwind
-npx serve public -l 3333
-```
 ## 📦 Project Structure
 
 ```
 ut-tracker/
 ├── public/
-│   ├── index.html              # Halaman utama
+│   ├── index.html                # Halaman utama
 │   └── assets/
 │       ├── css/
 │       │   ├── tailwind.build.css # CSS hasil build Tailwind
-│       │   └── styles.css          # Gaya kustom tambahan
+│       │   └── styles.css         # Gaya tambahan
 │       ├── js/
-│       │   ├── app.js              # Logika aplikasi
-│       │   └── theme-init.js       # Inisialisasi tema awal
-│       └── favicon.svg             # Ikon aplikasi
+│       │   ├── app.js             # Logika aplikasi
+│       │   └── theme-init.js      # Inisialisasi tema awal
+│       └── favicon.svg            # Ikon aplikasi
 ├── assets/
 │   └── css/
-│       └── tailwind.css            # Sumber utama Tailwind
+│       └── tailwind.css           # Sumber utama Tailwind (untuk build)
 ├── package.json
 ├── postcss.config.js
 └── tailwind.config.js
@@ -113,56 +108,62 @@ ut-tracker/
 |----------|-----------|
 | `npm run build:css` | Mengompilasi Tailwind (`assets/css/tailwind.css`) menjadi `public/assets/css/tailwind.build.css` |
 
-> ⚠️ **Wajib** jalankan `npm run build:css` setiap kali menambahkan atau mengubah kelas Tailwind sebelum deploy.
+> ⚠️ Jalankan `npm run build:css` setiap kali Anda menambah/mengubah kelas Tailwind sebelum deploy.
 
 ## ☁️ Deployment
 
-UT Tracker dapat di-deploy di berbagai layanan hosting statis. Pastikan `npm run build:css` dijalankan sehingga `public/assets/css/tailwind.build.css` terbaru tersedia.
+UT Tracker adalah aplikasi statis sehingga dapat di-host di Vercel, Netlify, Firebase Hosting, GitHub Pages, dan layanan sejenis. Alur umumnya:
+
+```bash
+npm install
+npm run build:css
+# deploy seluruh isi repositori (khususnya folder public/)
+```
 
 ### ▲ Vercel
 1. `npm install`
 2. `npm run build:css`
-3. Buat project baru di Vercel dan hubungkan ke repositori ini.
-4. Setelan build:
+3. Buat project baru di Vercel, pilih repo **imrosyd/ut-tracker**
+4. Build settings:
    - **Build Command**: `npm run build:css`
    - **Output Directory**: `public`
-5. Deploy – Vercel otomatis menyajikan `public/` beserta `public/assets`.
+5. Deploy → Vercel akan melayani `public/index.html` dan semua konten di `public/assets`
 
 ### 🌐 Netlify
 1. `npm install`
 2. `npm run build:css`
-3. Pada dashboard Netlify, pilih **New site from Git** dan hubungkan repositori.
-4. Setelan build:
+3. Di Netlify pilih **New site from Git** lalu hubungkan repositori
+4. Build settings:
    - **Build command**: `npm run build:css`
    - **Publish directory**: `public`
-5. Deploy – Netlify akan melayani `public/index.html` beserta `public/assets`.
+5. Deploy → Netlify otomatis menyajikan `public/`
 
 ### 🔥 Firebase Hosting
 1. `npm install`
 2. `npm run build:css`
 3. Instal CLI Firebase: `npm install -g firebase-tools`
 4. `firebase login`
-5. Inisialisasi hosting: `firebase init hosting`
+5. `firebase init hosting`
    - Pilih proyek Firebase
    - **Public directory**: `public`
    - Jawab *No* untuk SPA rewrite (kecuali ingin single-page routing)
-6. Deploy: `firebase deploy`
+6. `firebase deploy`
 
-> 💡 **Catatan:** Selama `npm run build:css` dijalankan sebelum deploy, seluruh aset siap pakai berada di `public/`.
+> 💡 Selama `npm run build:css` dijalankan sebelum deploy, semua aset sudah berada di `public/` tanpa langkah tambahan.
 
 ## 🤝 Contributing
 
-Saran perbaikan, laporan bug, atau ide fitur baru sangat diterima. Buka *issue* atau pull request di repositori ini.
+Ide fitur, laporan bug, atau perbaikan dokumentasi sangat diterima. Silakan gunakan tab *Issues* atau ajukan pull request langsung di repo resmi: https://github.com/imrosyd/ut-tracker.
 
 ## 📄 License
 
-Belum ada lisensi resmi yang ditentukan. Silakan hubungi pemilik repositori untuk penggunaan lebih lanjut.
+Belum ada lisensi resmi. Untuk penggunaan lebih lanjut atau kolaborasi, silakan hubungi pemilik repositori.
 
 <div align="center">
 
 ---
 
-### ⭐ Star repositori ini jika UT Tracker bermanfaat!
+### ⭐ Beri ⭐ pada repo jika UT Tracker membantu studi Anda!
 
 **Dibuat dengan ❤️ oleh [imrosyd](https://github.com/imrosyd)**
 
