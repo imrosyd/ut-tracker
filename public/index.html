@@ -13,9 +13,21 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+    <div id="mobile-warning" class="mobile-warning" hidden role="alert" aria-live="assertive">
+        <div class="mobile-warning__card">
+            <div class="mobile-warning__icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-10 w-10">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+            </div>
+            <h2>Silakan buka di Laptop, PC, atau Tablet</h2>
+            <p>Untuk pengalaman terbaik dalam menggunakan UT Tracker, mohon akses aplikasi ini melalui perangkat dengan layar yang lebih luas.</p>
+        </div>
+    </div>
+
+    <div id="app-root" class="w-full px-4 md:px-6 lg:px-8 py-4 md:py-6">
         
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex justify-between items-center mb-6 lg:mb-8 max-w-screen-2xl mx-auto">
             <div class="text-left">
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Tracker Belajar UT</h1>
                 <p class="mt-1 text-slate-500 dark:text-slate-400">Selamat datang, Mahasiswa Universitas Terbuka!</p>
@@ -27,7 +39,8 @@
             </button>
         </header>
 
-        <div class="lg:grid lg:grid-cols-[260px,1fr] lg:gap-8">
+        <div class="lg:grid lg:grid-cols-[280px,1fr,280px] xl:grid-cols-[320px,1fr,320px] lg:gap-6 xl:gap-8 max-w-screen-2xl mx-auto">
+            <!-- Navigator - Kiri -->
             <aside class="mb-10 lg:mb-0 lg:sticky lg:top-8 lg:max-h-[calc(100vh-5rem)] lg:overflow-auto">
                 <div class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-sm">
                     <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Navigator</h2>
@@ -36,19 +49,21 @@
                     <nav id="course-nav" aria-label="Navigator mata kuliah" class="mt-4 flex flex-col gap-2 text-sm"></nav>
                 </div>
             </aside>
+            
+            <!-- Main Content - Tengah -->
             <main class="space-y-8">
                 <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-white dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 text-center shadow-sm">
-                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Mata Kuliah</h3>
-                        <p id="total-mk" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 text-center">Total Mata Kuliah</h3>
+                        <p id="total-mk" class="text-2xl font-bold text-slate-900 dark:text-white text-center mt-2">0</p>
                     </div>
                     <div class="bg-white dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 text-center shadow-sm">
-                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Total SKS</h3>
-                        <p id="total-sks" class="text-2xl font-bold text-slate-900 dark:text-white">0</p>
+                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 text-center">Total SKS</h3>
+                        <p id="total-sks" class="text-2xl font-bold text-slate-900 dark:text-white text-center mt-2">0</p>
                     </div>
                     <div class="bg-white dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 text-center shadow-sm">
-                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400">Indeks Prestasi (IP)</h3>
-                        <p id="total-ip" class="text-2xl font-bold text-slate-900 dark:text-white">0.00</p>
+                        <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 text-center">IPK</h3>
+                        <p id="total-ip" class="text-2xl font-bold text-slate-900 dark:text-white text-center mt-2">0.00</p>
                     </div>
                 </section>
 
@@ -87,9 +102,70 @@
                     <div id="courses-container" class="space-y-6"></div>
                 </section>
             </main>
+            
+            <!-- Progress - Kanan -->
+            <aside class="progress-sidebar mt-10 lg:mt-0 lg:sticky lg:top-8 lg:max-h-[calc(100vh-5rem)] lg:overflow-auto">
+                <div class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-sm">
+                    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Progress Studi</h2>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Statistik dan progres pembelajaran Anda.</p>
+                    
+                    <!-- Progress Overview -->
+                    <div class="mt-4 space-y-3">
+                        <div class="text-center">
+                            <div id="overall-progress" class="text-3xl font-bold text-slate-900 dark:text-white mb-2">0%</div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                                <div id="progress-bar" class="bg-blue-500 dark:bg-blue-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Progress Keseluruhan</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics -->
+                    <div class="mt-6 space-y-3">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Statistik</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-600 dark:text-slate-400">Mata Kuliah Selesai:</span>
+                                <span id="completed-count" class="font-semibold text-green-600 dark:text-green-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-600 dark:text-slate-400">Sedang Berlangsung:</span>
+                                <span id="ongoing-count" class="font-semibold text-yellow-600 dark:text-yellow-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-600 dark:text-slate-400">Belum Dimulai:</span>
+                                <span id="not-started-count" class="font-semibold text-slate-600 dark:text-slate-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Statistik Nilai</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">MK dengan Aktivitas:</span>
+                                <span id="active-courses" class="font-semibold text-blue-600 dark:text-blue-400">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Nilai Tertinggi:</span>
+                                <span id="highest-ip" class="font-semibold text-slate-900 dark:text-white">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Nilai Terendah:</span>
+                                <span id="lowest-ip" class="font-semibold text-slate-900 dark:text-white">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Rata-rata Nilai:</span>
+                                <span id="average-ip" class="font-semibold text-slate-900 dark:text-white">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
 
-        <footer class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400">
+        <footer class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 max-w-screen-2xl mx-auto">
             <div class="social-links flex justify-center items-center gap-6">
                 <a href="https://github.com/imrosyd" target="_blank" rel="noopener noreferrer" title="GitHub" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                     <span class="sr-only">GitHub</span>
@@ -110,9 +186,7 @@
                     </svg>
                 </a>
             </div>
-            <p class="mt-4 text-sm">Dibuat dengan ❤️ oleh imrosyd</p>
         </footer>
-
     </div>
 </body>
 </html>

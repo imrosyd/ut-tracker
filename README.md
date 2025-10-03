@@ -19,7 +19,7 @@
 
 ## 🎯 What is UT Tracker?
 
-UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. Aplikasi ini membantu mengelola daftar mata kuliah, memantau presensi & diskusi tutorial, mencatat tugas/latihan praktik, dan menyiapkan target UAS — semuanya tersimpan aman di perangkat melalui `localStorage`.
+UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. Aplikasi ini membantu mengelola daftar mata kuliah, memantau presensi & diskusi tutorial, mencatat tugas/latihan praktik, dan menyiapkan target UAS — semuanya tersimpan aman di perangkat melalui `localStorage`. Versi terbaru menghadirkan indikator progres belajar per mata kuliah beserta guarding yang memastikan aplikasi hanya dijalankan pada perangkat dengan layar lebar (desktop, laptop, atau tablet).
 
 ## ✨ Features
 
@@ -29,7 +29,9 @@ UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. A
 
 ### 🧭 Produktivitas Akademik
 - Tambah mata kuliah dengan berbagai skema penilaian
-- Hitung otomatis total mata kuliah, total SKS, dan IP
+- Ringkasan Nilai Tutorial, Nilai UAS, Nilai Akhir, Nilai Huruf, dan Nilai Mutu
+- Indikator progres belajar per mata kuliah (menggabungkan presensi, diskusi, tugas, praktik, dan modul UAS)
+- Hitung otomatis total mata kuliah, total SKS, IP hingga statistik nilai tertinggi/terendah/rata-rata
 - Checklist modul UAS yang menyesuaikan jumlah SKS (1 SKS = 3 modul)
 - Kolom catatan diskusi per sesi tutorial
 
@@ -37,10 +39,17 @@ UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. A
 <td width="50%">
 
 ### 🎨 Pengalaman Modern
-- Antarmuka minimalis dan responsif
+- Antarmuka minimalis dan responsif untuk layar lebar
 - Mode terang/gelap mengikuti sistem & bisa diganti manual
 - Navigasi mata kuliah dan filter kategori secara instan
 - Transisi halus serta penyimpanan data lokal tanpa backend
+- Desktop / tablet guard: saat dibuka di ponsel akan menampilkan pesan "Silakan buka di Laptop/PC/Tablet" beserta layar kosong yang aman
+
+## 🔐 Privasi & Keamanan Data
+
+- Semua input (presensi, diskusi, target nilai, catatan, dsb.) disimpan **hanya di penyimpanan lokal peramban** (`localStorage`).
+- Data **tidak pernah dikirim** ke server mana pun ataupun layanan pihak ketiga. Anda tetap bisa menggunakan aplikasi ini secara offline setelah halaman dimuat.
+- Menghapus riwayat peramban atau menjalankan mode penyamaran (incognito) akan menghapus data, sehingga disarankan menggunakan peramban reguler saat mencatat progres studi.
 
 </td>
 </tr>
@@ -55,9 +64,11 @@ UT Tracker adalah **aplikasi web statis** untuk mahasiswa Universitas Terbuka. A
    git clone https://github.com/imrosyd/ut-tracker.git
    cd ut-tracker
    ```
-3. Masuk ke folder `public/` dan buka `index.html` di peramban modern (Chrome/Edge/Firefox/Safari)
+3. Masuk ke folder `public/` dan buka `index.html` di peramban modern (Chrome/Edge/Firefox/Safari). Pastikan resolusi layar ≥ 768px agar tampilan utama tidak diblokir.
 
 > Semua CSS & JavaScript sudah siap pakai di `public/assets`, jadi tidak perlu perintah build jika hanya ingin langsung menggunakan aplikasinya.
+
+> Karena seluruh data disimpan secara lokal, Anda dapat menyalin folder proyek ini ke perangkat pribadi tanpa khawatir kebocoran informasi akademik.
 
 ### Menjalankan server lokal (opsional)
 ```bash
@@ -164,7 +175,5 @@ Belum ada lisensi resmi. Untuk penggunaan lebih lanjut atau kolaborasi, silakan 
 ---
 
 ### ⭐ Beri ⭐ pada repo jika UT Tracker membantu studi Anda!
-
-**Dibuat dengan ❤️ oleh [imrosyd](https://github.com/imrosyd)**
 
 </div>

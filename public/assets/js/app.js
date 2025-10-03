@@ -2,28 +2,171 @@ const MODULES_PER_SKS = 3;
 const TUTORIAL_SESSIONS = 8;
 const TUTORIAL_TASKS = 3;
 const PRAKTIK_TASKS = 3;
+const MOBILE_MAX_WIDTH = 767;
+const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_MAX_WIDTH}px)`;
+
+const VALID_THEMES = new Set(['light', 'dark']);
 
 const SCHEME_DETAILS = {
-    Tuton: { label: 'Tutorial Online', badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200' },
-    Tuweb: { label: 'Tutorial Webinar', badgeClass: 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200' },
-    TTM: { label: 'Tutorial Tatap Muka', badgeClass: 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-200' },
-    Berpraktik: { label: 'Berpraktik', badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200' },
-    Berpraktikum: { label: 'Berpraktikum', badgeClass: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200' },
-    Praktik: { label: 'Praktik', badgeClass: 'bg-lime-100 text-lime-700 dark:bg-lime-900/50 dark:text-lime-200' },
-    Praktikum: { label: 'Praktikum', badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-200' },
-    'Hanya UAS': { label: 'Hanya UAS', badgeClass: 'bg-slate-200 text-slate-700 dark:bg-slate-700/70 dark:text-slate-200' }
+    Tuton: {
+        label: 'Tutorial Online',
+        badgeClass: 'course-badge course-badge--tuton'
+    },
+    Tuweb: {
+        label: 'Tutorial Webinar',
+        badgeClass: 'course-badge course-badge--tuweb'
+    },
+    TTM: {
+        label: 'Tutorial Tatap Muka',
+        badgeClass: 'course-badge course-badge--ttm'
+    },
+    Berpraktik: {
+        label: 'Berpraktik',
+        badgeClass: 'course-badge course-badge--berpraktik'
+    },
+    Berpraktikum: {
+        label: 'Berpraktikum',
+        badgeClass: 'course-badge course-badge--berpraktikum'
+    },
+    Praktik: {
+        label: 'Praktik',
+        badgeClass: 'course-badge course-badge--praktik'
+    },
+    Praktikum: {
+        label: 'Praktikum',
+        badgeClass: 'course-badge course-badge--praktikum'
+    },
+    'Hanya UAS': {
+        label: 'Hanya UAS',
+        badgeClass: 'course-badge course-badge--default'
+    }
 };
 
 let courses = [];
 let selectedCourseIndex = null;
 let selectedCategory = null;
+let desktopGuardInitialized = false;
+let mobileViewportMediaQuery = null;
 
-function applyTheme(theme, { persist = true } = {}) {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.dataset.theme = theme;
-    if (persist) {
-        localStorage.setItem('theme', theme);
+function applyTheme(theme, options = {}) {
+    const desiredTheme = VALID_THEMES.has(theme) ? theme : 'light';
+    const root = document.documentElement;
+
+    root.classList.toggle('dark', desiredTheme === 'dark');
+    root.dataset.theme = desiredTheme;
+
+    if (options.persist !== false) {
+        try {
+            localStorage.setItem('theme', desiredTheme);
+        } catch (error) {
+            console.warn('Gagal menyimpan tema:', error);
+        }
     }
+
+    if (options.onApply && typeof options.onApply === 'function') {
+        options.onApply(desiredTheme);
+    }
+
+    return desiredTheme;
+}
+
+function isMobileViewport() {
+    if (typeof window === 'undefined') return false;
+    if (typeof window.matchMedia === 'function') {
+        return window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+    }
+    return window.innerWidth <= MOBILE_MAX_WIDTH;
+}
+
+function enforceDesktopExperience() {
+    if (typeof document === 'undefined') return;
+
+    const appRoot = document.getElementById('app-root');
+    const warning = document.getElementById('mobile-warning');
+
+    if (!appRoot || !warning) return;
+
+    const shouldBlock = isMobileViewport();
+
+    document.body.classList.toggle('mobile-blocked', shouldBlock);
+
+    if (shouldBlock) {
+        warning.removeAttribute('hidden');
+        warning.setAttribute('aria-hidden', 'false');
+        appRoot.setAttribute('aria-hidden', 'true');
+        appRoot.setAttribute('data-mobile-hidden', 'true');
+    } else {
+        warning.setAttribute('aria-hidden', 'true');
+        warning.setAttribute('hidden', 'hidden');
+        appRoot.removeAttribute('aria-hidden');
+        appRoot.removeAttribute('data-mobile-hidden');
+    }
+}
+
+function setupDesktopOnlyGuard() {
+    if (desktopGuardInitialized) return;
+    desktopGuardInitialized = true;
+
+    if (typeof window !== 'undefined') {
+        enforceDesktopExperience();
+
+        if (typeof window.matchMedia === 'function') {
+            mobileViewportMediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+            const listener = () => enforceDesktopExperience();
+            if (typeof mobileViewportMediaQuery.addEventListener === 'function') {
+                mobileViewportMediaQuery.addEventListener('change', listener);
+            } else if (typeof mobileViewportMediaQuery.addListener === 'function') {
+                mobileViewportMediaQuery.addListener(listener);
+            }
+        }
+
+        window.addEventListener('resize', enforceDesktopExperience);
+        window.addEventListener('orientationchange', enforceDesktopExperience);
+    }
+}
+
+const DATETIME_LOCAL_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const DATETIME_LOCAL_WITH_SECONDS_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
+
+function toDatetimeLocalMinutes(value) {
+    if (DATETIME_LOCAL_PATTERN.test(value)) {
+        return value;
+    }
+    if (DATETIME_LOCAL_WITH_SECONDS_PATTERN.test(value)) {
+        return value.slice(0, 16);
+    }
+    return '';
+}
+
+function sanitizeDatetimeLocal(value) {
+    if (typeof value !== 'string') return '';
+    const trimmed = value.trim();
+    if (trimmed === '') return '';
+
+    const normalized = toDatetimeLocalMinutes(trimmed);
+    if (normalized) {
+        return normalized;
+    }
+
+    const withT = trimmed.replace(' ', 'T');
+    const normalizedWithT = toDatetimeLocalMinutes(withT);
+    if (normalizedWithT) {
+        return normalizedWithT;
+    }
+
+    const match = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+    if (!match) {
+        return '';
+    }
+
+    const [, day, month, year, hour = '00', minute = '00'] = match;
+    const dayPadded = day.padStart(2, '0');
+    const monthPadded = month.padStart(2, '0');
+    const hourPadded = hour.padStart(2, '0');
+    const minutePadded = minute.padStart(2, '0');
+
+    const candidate = `${year}-${monthPadded}-${dayPadded}T${hourPadded}:${minutePadded}`;
+    return toDatetimeLocalMinutes(candidate);
 }
 
 function getGradeDetails(score) {
@@ -39,20 +182,30 @@ function getGradeDetails(score) {
 }
 
 function calculateFinalScore(course) {
+    const hasTutorial = ['Tuton', 'Tuweb', 'TTM'].includes(course.scheme);
+    const hasPraktik = ['Berpraktik', 'Berpraktikum', 'Praktik', 'Praktikum'].includes(course.scheme);
+    const hasUas = !['Praktik', 'Praktikum'].includes(course.scheme);
+
     let totalTutorialScore = 0;
-    if (['Tuton', 'Tuweb', 'TTM'].includes(course.scheme)) {
+    let tutorialScore = 0;
+
+    if (hasTutorial) {
         const presensiSum = course.tutorial.presensi.reduce((sum, hadir) => sum + (hadir ? 100 : 0), 0);
-        const diskusiSum = course.tutorial.diskusi.reduce((sum, nilai) => {
+        let diskusiSum = 0;
+        let diskusiCount = 0;
+        course.tutorial.diskusi.forEach((nilai, idx) => {
+            const status = course.tutorial.diskusiStatus?.[idx];
             const parsed = parseFloat(nilai);
-            if (Number.isNaN(parsed) || parsed <= 0) {
-                return sum;
+            if (!status || Number.isNaN(parsed) || parsed <= 0) {
+                return;
             }
             const clamped = Math.min(100, parsed);
-            return sum + clamped;
-        }, 0);
+            diskusiSum += clamped;
+            diskusiCount += 1;
+        });
         const presensiAvg = presensiSum / TUTORIAL_SESSIONS;
         const presensiScore = (presensiAvg / 100) * 20;
-        const diskusiAvg = diskusiSum / TUTORIAL_SESSIONS;
+        const diskusiAvg = diskusiCount > 0 ? diskusiSum / diskusiCount : 0;
         const diskusiScore = (diskusiAvg / 100) * 30;
 
         let totalTugasNilai = 0;
@@ -67,10 +220,11 @@ function calculateFinalScore(course) {
         const avgTugasNilai = tugasCount > 0 ? totalTugasNilai / tugasCount : 0;
         const tugasScore = (avgTugasNilai / 100) * 50;
         totalTutorialScore = presensiScore + diskusiScore + tugasScore;
+        tutorialScore = totalTutorialScore;
     }
 
     let totalPraktikScore = 0;
-    if (['Berpraktik', 'Berpraktikum', 'Praktik', 'Praktikum'].includes(course.scheme)) {
+    if (hasPraktik) {
         let totalPraktikNilai = 0;
         let praktikCount = 0;
         course.praktik.nilai.forEach((nilai, index) => {
@@ -81,9 +235,13 @@ function calculateFinalScore(course) {
             }
         });
         totalPraktikScore = praktikCount > 0 ? totalPraktikNilai / praktikCount : 0;
+        if (!hasTutorial) {
+            tutorialScore = totalPraktikScore;
+        }
     }
 
-    const uasScore = parseFloat(course.uas.target) || 0;
+    const uasScoreCandidate = parseFloat(course.uas.target);
+    const uasScore = Number.isNaN(uasScoreCandidate) || uasScoreCandidate < 0 ? 0 : Math.min(100, uasScoreCandidate);
     let finalScore = 0;
 
     switch (course.scheme) {
@@ -112,11 +270,79 @@ function calculateFinalScore(course) {
 
     const gradeDetails = getGradeDetails(finalScore);
     const sks = parseInt(course.sks, 10) || 0;
+    const tutorialScoreDisplay = (hasTutorial || hasPraktik) ? tutorialScore.toFixed(2) : '-';
+    const uasScoreDisplay = hasUas ? uasScore.toFixed(2) : '-';
+
     return {
+        tutorialScore: tutorialScoreDisplay,
+        uasScore: uasScoreDisplay,
         finalScore: finalScore.toFixed(2),
         letterGrade: gradeDetails.letter,
         gradePoint: gradeDetails.point,
         nilaiMutu: (sks * gradeDetails.point).toFixed(2)
+    };
+}
+
+function calculateCourseProgress(course) {
+    const hasTutorial = ['Tuton', 'Tuweb', 'TTM'].includes(course.scheme);
+    const hasPraktik = ['Berpraktik', 'Berpraktikum', 'Praktik', 'Praktikum'].includes(course.scheme);
+    const hasUas = !['Praktik', 'Praktikum'].includes(course.scheme);
+
+    let completed = 0;
+    let total = 0;
+
+    const addItem = (isCompleted) => {
+        total += 1;
+        if (isCompleted) {
+            completed += 1;
+        }
+    };
+
+    if (hasTutorial) {
+        course.tutorial.presensi.forEach((hadir) => {
+            addItem(Boolean(hadir));
+        });
+        course.tutorial.diskusiStatus.forEach((status) => {
+            addItem(Boolean(status));
+        });
+        course.tutorial.tugasStatus.forEach((status) => {
+            addItem(Boolean(status));
+        });
+    }
+
+    if (hasPraktik) {
+        course.praktik.status.forEach((status) => {
+            addItem(Boolean(status));
+        });
+    }
+
+    if (hasUas) {
+        const jadwalSet = typeof course.uas.jadwal === 'string' && course.uas.jadwal !== '';
+        const targetSet = typeof course.uas.target === 'string' && course.uas.target !== '';
+        addItem(jadwalSet);
+        addItem(targetSet);
+        course.uas.modul.forEach((modulSelesai) => {
+            addItem(Boolean(modulSelesai));
+        });
+    }
+
+    if (total === 0) {
+        return {
+            completed: 0,
+            total: 0,
+            percent: 0,
+            label: 'Belum ada aktivitas'
+        };
+    }
+
+    const percent = Math.round((completed / total) * 100);
+    const clampedPercent = Math.min(100, Math.max(0, percent));
+
+    return {
+        completed,
+        total,
+        percent: clampedPercent,
+        label: `${completed} dari ${total} aktivitas`
     };
 }
 
@@ -137,23 +363,37 @@ function getModuleCount(sks) {
 }
 
 function normalizeCourse(rawCourse) {
+    const presensi = ensureArray(rawCourse.tutorial?.presensi, TUTORIAL_SESSIONS, false);
+    const rawDiskusi = ensureArray(rawCourse.tutorial?.diskusi, TUTORIAL_SESSIONS, '');
+    const diskusi = rawDiskusi.map((value) => {
+        if (value === true) return '100';
+        if (value === false) return '';
+        const parsed = parseFloat(value);
+        if (Number.isNaN(parsed) || parsed <= 0) return '';
+        const clamped = Math.min(100, parsed);
+        return clamped.toString();
+    });
+    const diskusiStatus = ensureArray(rawCourse.tutorial?.diskusiStatus, TUTORIAL_SESSIONS, false).map((value) => value === true || value === 'true');
+    diskusi.forEach((value, idx) => {
+        if (value !== '' && !diskusiStatus[idx]) {
+            diskusiStatus[idx] = true;
+        }
+    });
+    const tugasStatus = ensureArray(rawCourse.tutorial?.tugasStatus, TUTORIAL_TASKS, false);
+    const tugasNilai = ensureArray(rawCourse.tutorial?.tugasNilai, TUTORIAL_TASKS, '');
+    const catatanDiskusi = ensureArray(rawCourse.tutorial?.catatanDiskusi, TUTORIAL_SESSIONS, '');
+
     const course = {
         name: rawCourse.name || '',
         sks: rawCourse.sks || '0',
         scheme: rawCourse.scheme || 'Tuton',
         tutorial: {
-            presensi: ensureArray(rawCourse.tutorial?.presensi, TUTORIAL_SESSIONS, false),
-            diskusi: ensureArray(rawCourse.tutorial?.diskusi, TUTORIAL_SESSIONS, '').map((value) => {
-                if (value === true) return '100';
-                if (value === false) return '';
-                const parsed = parseFloat(value);
-                if (Number.isNaN(parsed) || parsed <= 0) return '';
-                const clamped = Math.min(100, parsed);
-                return clamped.toString();
-            }),
-            tugasStatus: ensureArray(rawCourse.tutorial?.tugasStatus, TUTORIAL_TASKS, false),
-            tugasNilai: ensureArray(rawCourse.tutorial?.tugasNilai, TUTORIAL_TASKS, ''),
-            catatanDiskusi: ensureArray(rawCourse.tutorial?.catatanDiskusi, TUTORIAL_SESSIONS, '')
+            presensi,
+            diskusi,
+            diskusiStatus,
+            tugasStatus,
+            tugasNilai,
+            catatanDiskusi
         },
         praktik: {
             deskripsi: ensureArray(rawCourse.praktik?.deskripsi, PRAKTIK_TASKS, ''),
@@ -161,7 +401,7 @@ function normalizeCourse(rawCourse) {
             nilai: ensureArray(rawCourse.praktik?.nilai, PRAKTIK_TASKS, '')
         },
         uas: {
-            jadwal: rawCourse.uas?.jadwal || '',
+            jadwal: sanitizeDatetimeLocal(rawCourse.uas?.jadwal || ''),
             target: rawCourse.uas?.target || '',
             modul: []
         }
@@ -178,17 +418,19 @@ function renderCourses() {
     if (!container) return;
 
     const totalCourses = courses.length;
-    const visibleIndexes = [];
+    let visibleIndexes = [];
 
-    courses.forEach((course, index) => {
-        if (selectedCategory) {
-            if (course.scheme === selectedCategory) {
-                visibleIndexes.push(index);
-            }
-        } else if (selectedCourseIndex !== null && selectedCourseIndex === index) {
-            visibleIndexes.push(index);
+    if (selectedCategory) {
+        visibleIndexes = courses
+            .map((course, index) => (course.scheme === selectedCategory ? index : null))
+            .filter((value) => value !== null);
+    } else if (selectedCourseIndex !== null) {
+        if (courses[selectedCourseIndex]) {
+            visibleIndexes = [selectedCourseIndex];
         }
-    });
+    } else {
+        visibleIndexes = courses.map((_, index) => index);
+    }
 
     const shouldShowPlaceholder = totalCourses === 0 || visibleIndexes.length === 0;
 
@@ -238,13 +480,49 @@ function updateSummary() {
 
     let totalSks = 0;
     let totalNilaiMutu = 0;
+    let completedCourses = 0;
+    let ongoingCourses = 0;
+    let notStartedCourses = 0;
+    let activeCourses = 0;
+    let totalProgressItems = 0;
+    let completedProgressItems = 0;
+    let highestScore = null;
+    let lowestScore = null;
+    let scoreSum = 0;
+    let scoreCount = 0;
 
     courses.forEach((course) => {
         const sks = parseInt(course.sks, 10) || 0;
-        if (sks > 0) {
-            const calculation = calculateFinalScore(course);
+        const calculation = calculateFinalScore(course);
+        const nilaiMutu = parseFloat(calculation.nilaiMutu);
+
+        if (sks > 0 && !Number.isNaN(nilaiMutu)) {
             totalSks += sks;
-            totalNilaiMutu += parseFloat(calculation.nilaiMutu);
+            totalNilaiMutu += nilaiMutu;
+        }
+
+        const finalScoreNumeric = parseFloat(calculation.finalScore);
+        if (!Number.isNaN(finalScoreNumeric)) {
+            highestScore = highestScore === null ? finalScoreNumeric : Math.max(highestScore, finalScoreNumeric);
+            lowestScore = lowestScore === null ? finalScoreNumeric : Math.min(lowestScore, finalScoreNumeric);
+            scoreSum += finalScoreNumeric;
+            scoreCount += 1;
+        }
+
+        const progress = calculateCourseProgress(course);
+        totalProgressItems += progress.total;
+        completedProgressItems += progress.completed;
+
+        if (progress.total === 0 || progress.completed === 0) {
+            notStartedCourses += 1;
+        } else if (progress.completed === progress.total) {
+            completedCourses += 1;
+        } else {
+            ongoingCourses += 1;
+        }
+
+        if (progress.completed > 0) {
+            activeCourses += 1;
         }
     });
 
@@ -253,6 +531,37 @@ function updateSummary() {
     totalMkEl.textContent = courses.length;
     totalSksEl.textContent = totalSks;
     totalIpEl.textContent = ipk;
+
+    const overallProgressEl = document.getElementById('overall-progress');
+    const progressBarEl = document.getElementById('progress-bar');
+    if (overallProgressEl && progressBarEl) {
+        const overallPercent = totalProgressItems > 0 ? Math.round((completedProgressItems / totalProgressItems) * 100) : 0;
+        overallProgressEl.textContent = `${overallPercent}%`;
+        progressBarEl.style.width = `${overallPercent}%`;
+    }
+
+    const completedCountEl = document.getElementById('completed-count');
+    const ongoingCountEl = document.getElementById('ongoing-count');
+    const notStartedCountEl = document.getElementById('not-started-count');
+    if (completedCountEl && ongoingCountEl && notStartedCountEl) {
+        completedCountEl.textContent = completedCourses;
+        ongoingCountEl.textContent = ongoingCourses;
+        notStartedCountEl.textContent = notStartedCourses;
+    }
+
+    const activeCoursesEl = document.getElementById('active-courses');
+    if (activeCoursesEl) {
+        activeCoursesEl.textContent = activeCourses;
+    }
+
+    const highestIpEl = document.getElementById('highest-ip');
+    const lowestIpEl = document.getElementById('lowest-ip');
+    const averageIpEl = document.getElementById('average-ip');
+    if (highestIpEl && lowestIpEl && averageIpEl) {
+        highestIpEl.textContent = highestScore !== null ? highestScore.toFixed(2) : '-';
+        lowestIpEl.textContent = lowestScore !== null ? lowestScore.toFixed(2) : '-';
+        averageIpEl.textContent = scoreCount > 0 ? (scoreSum / scoreCount).toFixed(2) : '-';
+    }
 }
 
 function renderNavigation() {
@@ -369,9 +678,10 @@ function generateCourseCardHTML(course, index) {
 
     const hasTutorial = ['Tuton', 'Tuweb', 'TTM'].includes(course.scheme);
     const hasPraktik = ['Berpraktik', 'Berpraktikum', 'Praktik', 'Praktikum'].includes(course.scheme);
-    const hasUAS = !['Praktik', 'Praktikum'].includes(course.scheme);
+    const hasUas = !['Praktik', 'Praktikum'].includes(course.scheme);
 
     const calculation = calculateFinalScore(course);
+    const progress = calculateCourseProgress(course);
     const moduleCount = getModuleCount(course.sks);
 
     const tutorialSection = hasTutorial
@@ -383,8 +693,9 @@ function generateCourseCardHTML(course, index) {
                         <thead class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/70">
                             <tr>
                                 <th class="p-3">Sesi</th>
-                                <th class="p-3">Presensi (20%)</th>
-                                <th class="p-3">Diskusi (30%)</th>
+                                <th class="p-3">Presensi</th>
+                                <th class="p-3">Status Diskusi</th>
+                                <th class="p-3">Nilai Diskusi</th>
                                 <th class="p-3">Catatan</th>
                             </tr>
                         </thead>
@@ -396,7 +707,10 @@ function generateCourseCardHTML(course, index) {
                                         <input type="checkbox" onchange="updateItem(${index}, 'presensi', ${i})" ${course.tutorial.presensi[i] ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 dark:border-slate-600">
                                     </td>
                                     <td class="p-3">
-                                        <input type="number" min="1" max="100" step="1" oninput="updateItem(${index}, 'diskusi', ${i}, this.value)" value="${course.tutorial.diskusi?.[i] ?? ''}" class="w-24 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <input type="checkbox" onchange="updateItem(${index}, 'diskusiStatus', ${i})" ${course.tutorial.diskusiStatus?.[i] ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 dark:border-slate-600">
+                                    </td>
+                                    <td class="p-3">
+                                        <input type="number" min="0" max="100" step="1" placeholder="0-100" onchange="updateItem(${index}, 'diskusi', ${i}, this.value)" value="${course.tutorial.diskusi?.[i] ?? ''}" class="w-24 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </td>
                                     <td class="p-3">
                                         <input type="text" oninput="updateItem(${index}, 'catatanDiskusi', ${i}, this.value)" value="${course.tutorial.catatanDiskusi?.[i] || ''}" class="w-full px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -406,7 +720,7 @@ function generateCourseCardHTML(course, index) {
                         </tbody>
                     </table>
                 </div>
-                <h5 class="font-semibold mt-6 mb-3">Tugas Wajib (50%)</h5>
+                <h5 class="font-semibold mt-6 mb-3">Tugas Wajib</h5>
                 <div class="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
                     <table class="w-full text-sm text-left">
                         <thead class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/70">
@@ -428,7 +742,7 @@ function generateCourseCardHTML(course, index) {
                                             <input type="checkbox" onchange="updateItem(${index}, 'tugasStatus', ${i})" ${course.tutorial.tugasStatus[i] ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 dark:border-slate-600">
                                         </td>
                                         <td class="p-3">
-                                            <input type="number" min="0" max="100" onchange="updateItem(${index}, 'tugasNilai', ${i}, this.value)" value="${course.tutorial.tugasNilai[i]}" class="w-24 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <input type="number" min="0" max="100" placeholder="0-100" onchange="updateItem(${index}, 'tugasNilai', ${i}, this.value)" value="${course.tutorial.tugasNilai[i]}" class="w-24 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                         </td>
                                     </tr>
                                 `;
@@ -476,14 +790,14 @@ function generateCourseCardHTML(course, index) {
         `
         : '';
 
-    const uasSection = hasUAS
+    const uasSection = hasUas
         ? `
             <div class="mt-6 border-t border-slate-200/60 dark:border-slate-700/60 pt-6">
                 <h4 class="text-lg font-semibold mb-3">Persiapan UAS</h4>
                 <div class="grid md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="text-sm font-medium">Jadwal UAS</label>
-                        <input type="text" oninput="updateItem(${index}, 'uasJadwal', null, this.value)" value="${course.uas.jadwal}" placeholder="dd/mm/yyyy hh:mm" class="w-full mt-1 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="datetime-local" onchange="updateItem(${index}, 'uasJadwal', null, this.value)" value="${course.uas.jadwal}" class="w-full mt-1 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" step="60">
                     </div>
                     <div>
                         <label class="text-sm font-medium">Target/Nilai UAS</label>
@@ -507,7 +821,7 @@ function generateCourseCardHTML(course, index) {
         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white">${course.name}</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">${course.sks} SKS • <span class="inline-flex items-center gap-1 font-medium px-2 py-0.5 rounded-full text-xs ${detail.badgeClass}">${detail.label}</span></p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">${course.sks} SKS • <span class="${detail.badgeClass}">${detail.label}</span></p>
             </div>
             <button onclick="deleteCourse(${index})" class="text-slate-400 hover:text-red-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-2 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -515,7 +829,15 @@ function generateCourseCardHTML(course, index) {
                 </svg>
             </button>
         </div>
-        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl">
+    <div class="mt-4 summary-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 text-center bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl">
+            <div class="flex flex-col gap-1">
+                <p class="text-xs tracking-wide text-slate-500 dark:text-slate-400 uppercase">Nilai Tutorial</p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">${calculation.tutorialScore}</p>
+            </div>
+            <div class="flex flex-col gap-1">
+                <p class="text-xs tracking-wide text-slate-500 dark:text-slate-400 uppercase">Nilai UAS</p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">${calculation.uasScore}</p>
+            </div>
             <div class="flex flex-col gap-1">
                 <p class="text-xs tracking-wide text-slate-500 dark:text-slate-400 uppercase">Nilai Akhir</p>
                 <p class="text-2xl font-bold text-slate-900 dark:text-white">${calculation.finalScore}</p>
@@ -527,6 +849,16 @@ function generateCourseCardHTML(course, index) {
             <div class="flex flex-col gap-1">
                 <p class="text-xs tracking-wide text-slate-500 dark:text-slate-400 uppercase">Nilai Mutu</p>
                 <p class="text-2xl font-bold text-slate-900 dark:text-white">${calculation.nilaiMutu}</p>
+            </div>
+            <div class="flex flex-col gap-2 items-center">
+                <p class="text-xs tracking-wide text-slate-500 dark:text-slate-400 uppercase">Progress Belajar</p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">${progress.percent}%</p>
+                <div class="summary-progress">
+                    <div class="summary-progress-track">
+                        <div class="summary-progress-fill" style="width: ${progress.percent}%;"></div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">${progress.label}</p>
             </div>
         </div>
         ${tutorialSection}
@@ -559,6 +891,7 @@ function addCourse() {
         tutorial: {
             presensi: Array(TUTORIAL_SESSIONS).fill(false),
             diskusi: Array(TUTORIAL_SESSIONS).fill(''),
+            diskusiStatus: Array(TUTORIAL_SESSIONS).fill(false),
             tugasStatus: Array(TUTORIAL_TASKS).fill(false),
             tugasNilai: Array(TUTORIAL_TASKS).fill(''),
             catatanDiskusi: Array(TUTORIAL_SESSIONS).fill('')
@@ -615,14 +948,32 @@ function updateItem(courseIndex, itemType, itemIndex, value) {
             if (course.tutorial.diskusi[itemIndex] !== undefined) {
                 if (value === '') {
                     course.tutorial.diskusi[itemIndex] = '';
+                    if (course.tutorial.diskusiStatus?.[itemIndex] !== undefined) {
+                        course.tutorial.diskusiStatus[itemIndex] = false;
+                    }
                 } else {
                     const parsed = parseFloat(value);
                     if (Number.isNaN(parsed) || parsed <= 0) {
                         course.tutorial.diskusi[itemIndex] = '';
+                        if (course.tutorial.diskusiStatus?.[itemIndex] !== undefined) {
+                            course.tutorial.diskusiStatus[itemIndex] = false;
+                        }
                     } else {
                         const clamped = Math.min(100, parsed);
                         course.tutorial.diskusi[itemIndex] = clamped.toString();
+                        if (course.tutorial.diskusiStatus?.[itemIndex] !== undefined) {
+                            course.tutorial.diskusiStatus[itemIndex] = true;
+                        }
                     }
+                }
+            }
+            break;
+        case 'diskusiStatus':
+            if (course.tutorial.diskusiStatus?.[itemIndex] !== undefined) {
+                const nextStatus = !course.tutorial.diskusiStatus[itemIndex];
+                course.tutorial.diskusiStatus[itemIndex] = nextStatus;
+                if (!nextStatus && course.tutorial.diskusi?.[itemIndex] !== undefined) {
+                    course.tutorial.diskusi[itemIndex] = '';
                 }
             }
             break;
@@ -657,7 +1008,7 @@ function updateItem(courseIndex, itemType, itemIndex, value) {
             }
             break;
         case 'uasJadwal':
-            course.uas.jadwal = value;
+            course.uas.jadwal = sanitizeDatetimeLocal(value);
             break;
         case 'uasTarget':
             course.uas.target = value;
@@ -711,6 +1062,8 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTheme(nextTheme);
         });
     }
+
+    setupDesktopOnlyGuard();
 
     loadData();
     courses = courses.map(normalizeCourse);
