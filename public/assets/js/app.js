@@ -41,10 +41,19 @@ function getGradeDetails(score) {
 function calculateFinalScore(course) {
     let totalTutorialScore = 0;
     if (['Tuton', 'Tuweb', 'TTM'].includes(course.scheme)) {
-        const presensiDone = course.tutorial.presensi.filter(Boolean).length;
-        const diskusiDone = course.tutorial.diskusi.filter(Boolean).length;
-        const presensiScore = (presensiDone / TUTORIAL_SESSIONS) * 20;
-        const diskusiScore = (diskusiDone / TUTORIAL_SESSIONS) * 30;
+        const presensiSum = course.tutorial.presensi.reduce((sum, hadir) => sum + (hadir ? 100 : 0), 0);
+        const diskusiSum = course.tutorial.diskusi.reduce((sum, nilai) => {
+            const parsed = parseFloat(nilai);
+            if (Number.isNaN(parsed) || parsed <= 0) {
+                return sum;
+            }
+            const clamped = Math.min(100, parsed);
+            return sum + clamped;
+        }, 0);
+        const presensiAvg = presensiSum / TUTORIAL_SESSIONS;
+        const presensiScore = (presensiAvg / 100) * 20;
+        const diskusiAvg = diskusiSum / TUTORIAL_SESSIONS;
+        const diskusiScore = (diskusiAvg / 100) * 30;
 
         let totalTugasNilai = 0;
         let tugasCount = 0;
@@ -134,7 +143,14 @@ function normalizeCourse(rawCourse) {
         scheme: rawCourse.scheme || 'Tuton',
         tutorial: {
             presensi: ensureArray(rawCourse.tutorial?.presensi, TUTORIAL_SESSIONS, false),
-            diskusi: ensureArray(rawCourse.tutorial?.diskusi, TUTORIAL_SESSIONS, false),
+            diskusi: ensureArray(rawCourse.tutorial?.diskusi, TUTORIAL_SESSIONS, '').map((value) => {
+                if (value === true) return '100';
+                if (value === false) return '';
+                const parsed = parseFloat(value);
+                if (Number.isNaN(parsed) || parsed <= 0) return '';
+                const clamped = Math.min(100, parsed);
+                return clamped.toString();
+            }),
             tugasStatus: ensureArray(rawCourse.tutorial?.tugasStatus, TUTORIAL_TASKS, false),
             tugasNilai: ensureArray(rawCourse.tutorial?.tugasNilai, TUTORIAL_TASKS, ''),
             catatanDiskusi: ensureArray(rawCourse.tutorial?.catatanDiskusi, TUTORIAL_SESSIONS, '')
@@ -380,7 +396,7 @@ function generateCourseCardHTML(course, index) {
                                         <input type="checkbox" onchange="updateItem(${index}, 'presensi', ${i})" ${course.tutorial.presensi[i] ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 dark:border-slate-600">
                                     </td>
                                     <td class="p-3">
-                                        <input type="checkbox" onchange="updateItem(${index}, 'diskusi', ${i})" ${course.tutorial.diskusi[i] ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 dark:border-slate-600">
+                                        <input type="number" min="1" max="100" step="1" oninput="updateItem(${index}, 'diskusi', ${i}, this.value)" value="${course.tutorial.diskusi?.[i] ?? ''}" class="w-24 px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </td>
                                     <td class="p-3">
                                         <input type="text" oninput="updateItem(${index}, 'catatanDiskusi', ${i}, this.value)" value="${course.tutorial.catatanDiskusi?.[i] || ''}" class="w-full px-3 py-2 bg-transparent border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -542,7 +558,7 @@ function addCourse() {
         scheme: schemeSelect.value,
         tutorial: {
             presensi: Array(TUTORIAL_SESSIONS).fill(false),
-            diskusi: Array(TUTORIAL_SESSIONS).fill(false),
+            diskusi: Array(TUTORIAL_SESSIONS).fill(''),
             tugasStatus: Array(TUTORIAL_TASKS).fill(false),
             tugasNilai: Array(TUTORIAL_TASKS).fill(''),
             catatanDiskusi: Array(TUTORIAL_SESSIONS).fill('')
@@ -597,7 +613,17 @@ function updateItem(courseIndex, itemType, itemIndex, value) {
             break;
         case 'diskusi':
             if (course.tutorial.diskusi[itemIndex] !== undefined) {
-                course.tutorial.diskusi[itemIndex] = !course.tutorial.diskusi[itemIndex];
+                if (value === '') {
+                    course.tutorial.diskusi[itemIndex] = '';
+                } else {
+                    const parsed = parseFloat(value);
+                    if (Number.isNaN(parsed) || parsed <= 0) {
+                        course.tutorial.diskusi[itemIndex] = '';
+                    } else {
+                        const clamped = Math.min(100, parsed);
+                        course.tutorial.diskusi[itemIndex] = clamped.toString();
+                    }
+                }
             }
             break;
         case 'tugasStatus':
