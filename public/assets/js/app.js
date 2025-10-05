@@ -1,3 +1,4 @@
+const PERSONAL_LINKS_KEY = 'utTrackerPersonalLinks';
 const MODULES_PER_SKS = 3;
 const TUTORIAL_SESSIONS = 8;
 const TUTORIAL_TASKS = 3;
@@ -47,6 +48,7 @@ let selectedCourseIndex = null;
 let selectedCategory = null;
 let desktopGuardInitialized = false;
 let mobileViewportMediaQuery = null;
+let personalLinks = [];
 
 function applyTheme(theme, options = {}) {
     const desiredTheme = VALID_THEMES.has(theme) ? theme : 'light';
@@ -1047,6 +1049,251 @@ function loadData() {
     }
 }
 
+function initializePersonalLinks() {
+    const trigger = document.getElementById('personal-links-trigger');
+    const form = document.getElementById('personal-links-form');
+    const cancelButton = document.getElementById('personal-link-cancel');
+    const labelInput = document.getElementById('personal-link-label');
+    const urlInput = document.getElementById('personal-link-url');
+    const listElement = document.getElementById('personal-links-list');
+    const emptyState = document.getElementById('personal-links-empty');
+
+    if (!trigger || !form || !cancelButton || !labelInput || !urlInput || !listElement || !emptyState) {
+        return;
+    }
+
+    let formVisible = false;
+
+    const storageAvailable = (() => {
+        try {
+            const probeKey = `${PERSONAL_LINKS_KEY}::probe`;
+            localStorage.setItem(probeKey, '1');
+            localStorage.removeItem(probeKey);
+            return true;
+        } catch (error) {
+            console.warn('Penyimpanan localStorage tidak tersedia untuk link pribadi:', error);
+            return false;
+        }
+    })();
+
+    const normalizeLinks = (rawValue) => {
+        if (!Array.isArray(rawValue)) return [];
+        return rawValue
+            .map((entry) => {
+                if (!entry || typeof entry !== 'object') return null;
+                const id = typeof entry.id === 'string' && entry.id.trim() ? entry.id.trim() : null;
+                const label = typeof entry.label === 'string' ? entry.label.trim() : '';
+                const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+                if (!id || !url) return null;
+                return { id, label, url };
+            })
+            .filter(Boolean);
+    };
+
+    const loadLinks = () => {
+        try {
+            const stored = localStorage.getItem(PERSONAL_LINKS_KEY);
+            personalLinks = stored ? normalizeLinks(JSON.parse(stored)) : [];
+        } catch (error) {
+            console.error('Gagal memuat link pribadi:', error);
+            personalLinks = [];
+        }
+    };
+
+    const persistLinks = () => {
+        if (!storageAvailable) return;
+        try {
+            localStorage.setItem(PERSONAL_LINKS_KEY, JSON.stringify(personalLinks));
+        } catch (error) {
+            console.error('Gagal menyimpan link pribadi:', error);
+        }
+    };
+
+    const FALLBACK_FAVICON = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%236781A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3.75" y="3.75" width="16.5" height="16.5" rx="4"/%3E%3Cpath d="M9 8.5h6M8.5 12h7M10.5 15.5h3"/%3E%3C/svg%3E';
+
+    const getFaviconUrl = (targetUrl) => {
+        try {
+            const parsed = new URL(targetUrl);
+            if (!parsed.hostname) return null;
+            const encodedHost = encodeURIComponent(parsed.hostname);
+            return `https://www.google.com/s2/favicons?domain=${encodedHost}&sz=64`;
+        } catch (error) {
+            return null;
+        }
+    };
+
+    const updateEmptyState = () => {
+        const hasLinks = personalLinks.length > 0;
+        emptyState.classList.toggle('hidden', hasLinks);
+        listElement.classList.toggle('hidden', !hasLinks);
+    };
+
+    const renderLinks = () => {
+        listElement.innerHTML = '';
+
+        personalLinks.forEach((link) => {
+            const item = document.createElement('div');
+            item.className = 'group flex items-center justify-between gap-3 rounded-xl border border-transparent bg-white/70 dark:bg-slate-900/40 px-3 py-2 shadow-sm transition-colors hover:border-blue-200 dark:hover:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-slate-800/80';
+            item.dataset.linkId = link.id;
+
+            const content = document.createElement('div');
+            content.className = 'flex min-w-0 flex-1 items-center gap-3';
+
+            const iconWrapper = document.createElement('span');
+            iconWrapper.className = 'flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800/80 dark:text-slate-500 flex-shrink-0';
+            iconWrapper.setAttribute('aria-hidden', 'true');
+
+            const icon = document.createElement('img');
+            icon.className = 'h-5 w-5 rounded-sm object-contain';
+            icon.alt = '';
+            icon.loading = 'lazy';
+            icon.decoding = 'async';
+            icon.referrerPolicy = 'no-referrer';
+            icon.src = getFaviconUrl(link.url) || FALLBACK_FAVICON;
+            icon.addEventListener('error', () => {
+                icon.src = FALLBACK_FAVICON;
+                icon.onerror = null;
+            });
+
+            iconWrapper.appendChild(icon);
+
+            const anchor = document.createElement('a');
+            anchor.href = link.url;
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+            anchor.className = 'flex-1 min-w-0 truncate text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300';
+            anchor.textContent = link.label || link.url;
+            anchor.title = link.url;
+
+            content.appendChild(iconWrapper);
+            content.appendChild(anchor);
+
+            const actions = document.createElement('div');
+            actions.className = 'flex shrink-0 items-center gap-1';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'rounded-full p-1 text-slate-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors';
+            deleteButton.innerHTML = '<span class="sr-only">Hapus link</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4"><path fill-rule="evenodd" d="M8.75 3a1 1 0 00-.964.737L7.49 4.5H5a.75.75 0 000 1.5h.306l.548 8.645A2 2 0 007.85 16h4.3a2 2 0 001.996-1.355L14.694 6H15a.75.75 0 000-1.5h-2.49l-.295-.763A1 1 0 0011.25 3h-2.5zm-1.22 3.5a.75.75 0 011.5 0l-.25 6.5a.75.75 0 11-1.5 0l.25-6.5zm4.69 0a.75.75 0 00-1.5 0l.25 6.5a.75.75 0 001.5 0l-.25-6.5z" clip-rule="evenodd" /></svg>';
+            deleteButton.addEventListener('click', () => {
+                personalLinks = personalLinks.filter((current) => current.id !== link.id);
+                persistLinks();
+                renderLinks();
+            });
+
+            actions.appendChild(deleteButton);
+
+            item.appendChild(content);
+            item.appendChild(actions);
+            listElement.appendChild(item);
+        });
+
+        updateEmptyState();
+    };
+
+    const showForm = () => {
+        formVisible = true;
+        form.classList.remove('hidden');
+        form.setAttribute('aria-hidden', 'false');
+        trigger.setAttribute('aria-expanded', 'true');
+        labelInput.focus();
+    };
+
+    const hideForm = ({ focusTrigger = false } = {}) => {
+        formVisible = false;
+        form.classList.add('hidden');
+        form.setAttribute('aria-hidden', 'true');
+        trigger.setAttribute('aria-expanded', 'false');
+        form.reset();
+        urlInput.setCustomValidity('');
+        if (focusTrigger) {
+            trigger.focus();
+        }
+    };
+
+    trigger.addEventListener('click', () => {
+        if (formVisible) {
+            hideForm();
+        } else {
+            showForm();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && formVisible) {
+            hideForm({ focusTrigger: true });
+        }
+    });
+
+    cancelButton.addEventListener('click', () => {
+        hideForm({ focusTrigger: true });
+    });
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const label = labelInput.value.trim();
+        let url = urlInput.value.trim();
+
+        if (!url) {
+            urlInput.focus();
+            urlInput.reportValidity();
+            return;
+        }
+
+        if (!/^https?:\/\//i.test(url)) {
+            url = `https://${url}`;
+        }
+
+        try {
+            const parsed = new URL(url);
+            url = parsed.toString();
+        } catch (error) {
+            urlInput.setCustomValidity('Mohon masukkan URL yang valid.');
+            urlInput.reportValidity();
+            return;
+        }
+
+        urlInput.setCustomValidity('');
+
+        const newLink = {
+            id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+                ? crypto.randomUUID()
+                : `link-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+            label: label || url,
+            url
+        };
+
+        personalLinks.push(newLink);
+        persistLinks();
+        renderLinks();
+        hideForm({ focusTrigger: true });
+    });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key !== PERSONAL_LINKS_KEY) return;
+        try {
+            personalLinks = event.newValue ? normalizeLinks(JSON.parse(event.newValue)) : [];
+            renderLinks();
+            if (formVisible) {
+                hideForm();
+            }
+        } catch (error) {
+            console.error('Gagal memperbarui link pribadi dari tab lain:', error);
+        }
+    });
+
+    if (!storageAvailable) {
+        trigger.disabled = true;
+        trigger.classList.add('opacity-60', 'cursor-not-allowed');
+        trigger.setAttribute('aria-disabled', 'true');
+        emptyState.textContent = 'Penyimpanan lokal tidak tersedia di browser ini.';
+    }
+
+    loadLinks();
+    renderLinks();
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const storedTheme = localStorage.getItem('theme');
@@ -1070,6 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedCourseIndex = null;
     selectedCategory = null;
     renderCourses();
+    initializePersonalLinks();
 });
 
 window.addCourse = addCourse;
