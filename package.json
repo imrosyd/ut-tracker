@@ -4,7 +4,7 @@
   "description": "Aplikasi web statis untuk membantu mahasiswa Universitas Terbuka melacak progress mata kuliah, tutorial, praktik, dan target UAS dengan tampilan modern serta dukungan mode gelap.",
   "main": "index.js",
   "scripts": {
-    "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./public/assets/css/tailwind.build.css --minify",
+    "build:css": "tailwindcss -i ./src/assets/css/tailwind.css -o ./dist/css/tailwind.build.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
