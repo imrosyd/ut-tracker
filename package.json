@@ -1,0 +1,19 @@
+{
+  "name": "ut-tracker",
+  "version": "1.0.0",
+  "description": "Aplikasi web statis untuk membantu mahasiswa Universitas Terbuka melacak progress mata kuliah, tutorial, praktik, dan target UAS dengan tampilan modern serta dukungan mode gelap.",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/assets/css/tailwind.css -o ./dist/css/tailwind.build.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.14"
+  }
+}

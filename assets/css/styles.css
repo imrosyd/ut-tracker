@@ -1,0 +1,742 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.mobile-blocked {
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+}
+
+#mobile-warning {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.86);
+    backdrop-filter: blur(12px);
+    z-index: 9999;
+}
+
+body.mobile-blocked #mobile-warning {
+    display: flex;
+}
+
+body.mobile-blocked #app-root {
+    display: none !important;
+}
+
+.mobile-warning__card {
+    max-width: 420px;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(248, 250, 252, 0.12);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.mobile-warning__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 9999px;
+    background: rgba(248, 250, 252, 0.08);
+    color: #93c5fd;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+}
+
+.mobile-warning__card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: -0.02em;
+}
+
+.mobile-warning__card p {
+    color: #cbd5f5;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.tracker-card,
+.form-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tracker-card:hover,
+.form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 45px -28px rgba(15, 23, 42, 0.45);
+}
+
+.dark .tracker-card:hover,
+.dark .form-card:hover {
+    box-shadow: 0 20px 45px -28px rgba(148, 163, 184, 0.35);
+}
+
+.task-input:checked + label {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+.theme-icon {
+    transition: transform 0.3s ease-in-out;
+}
+
+.theme-icon.sun {
+    transform: scale(1) rotate(0deg);
+}
+
+.theme-icon.moon {
+    transform: scale(0) rotate(90deg);
+}
+
+.dark .theme-icon.sun {
+    transform: scale(0) rotate(-90deg);
+}
+
+.dark .theme-icon.moon {
+    transform: scale(1) rotate(0deg);
+}
+
+.empty-state {
+    background: rgba(248, 250, 252, 0.75);
+}
+
+.dark .empty-state {
+    background: rgba(30, 41, 59, 0.75);
+}
+
+.tracker-card:target {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 4px;
+}
+
+.dark .tracker-card:target {
+    outline-color: rgba(96, 165, 250, 0.45);
+}
+
+/* Full-screen three-column layout styles */
+@media (min-width: 1024px) {
+    .lg\:grid-cols-\[280px\,1fr\,280px\] {
+        grid-template-columns: minmax(0, 280px) minmax(0, 1fr) minmax(0, 280px);
+    }
+
+    .lg\:grid > main,
+    .lg\:grid > aside {
+        min-width: 0;
+    }
+}
+
+@media (min-width: 1280px) {
+    .xl\:grid-cols-\[320px\,1fr\,320px\] {
+        grid-template-columns: minmax(0, 320px) minmax(0, 1fr) minmax(0, 320px);
+    }
+}
+
+/* Progress sidebar specific styles */
+.progress-sidebar {
+    transition: all 0.3s ease;
+}
+
+.progress-sidebar:hover {
+    transform: translateY(-1px);
+}
+
+/* Progress bar animation */
+#progress-bar {
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Statistics hover effects */
+.progress-sidebar .space-y-2 > div:hover {
+    background-color: rgba(248, 250, 252, 0.5);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+
+.dark .progress-sidebar .space-y-2 > div:hover {
+    background-color: rgba(30, 41, 59, 0.5);
+}
+
+/* Full-screen responsive adjustments */
+@media (max-width: 1023px) {
+    .lg\:grid-cols-\[280px\,1fr\,280px\],
+    .xl\:grid-cols-\[320px\,1fr\,320px\] {
+        display: block !important;
+    }
+    
+    .lg\:sticky {
+        position: static !important;
+        max-height: none !important;
+    }
+    
+    /* Stack order for mobile - Navigator first, Main second, Progress last */
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > aside:first-child,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > aside:first-child {
+        order: 1;
+    }
+    
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > main,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > main {
+        order: 2;
+    }
+    
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > aside:last-child,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > aside:last-child {
+        order: 3;
+    }
+}
+
+/* Tablet layout - side by side sidebars */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > aside,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > aside {
+        display: inline-block;
+        width: calc(50% - 0.5rem);
+        margin-right: 1rem;
+        vertical-align: top;
+    }
+    
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > aside:last-child,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > aside:last-child {
+        margin-right: 0;
+    }
+    
+    .lg\:grid-cols-\[280px\,1fr\,280px\] > main,
+    .xl\:grid-cols-\[320px\,1fr\,320px\] > main {
+        width: 100%;
+        margin-top: 2rem;
+    }
+}
+
+/* Ultra-wide screen optimizations */
+@media (min-width: 1536px) {
+    .max-w-screen-2xl {
+        max-width: 1500px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .max-w-screen-2xl {
+        max-width: 1760px;
+    }
+}
+
+/* Full-screen body optimization */
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: auto;
+}
+
+/* Header full-width styling */
+header {
+    width: 100%;
+}
+
+/* Main content area full-width */
+main {
+    width: 100%;
+    min-height: calc(100vh - 200px);
+}
+
+/* Footer full-width */
+footer {
+    width: 100%;
+}
+
+/* Sidebar full-height optimization */
+@media (min-width: 1024px) {
+    .lg\:sticky {
+        max-height: calc(100vh - 120px);
+    }
+    
+    /* Improve sidebar scrollbar on large screens */
+    .lg\:overflow-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+    
+    .dark .lg\:overflow-auto {
+        scrollbar-color: #475569 transparent;
+    }
+}
+
+/* Enhanced sidebar content spacing for wide screens */
+@media (min-width: 1280px) {
+    .progress-sidebar .space-y-3 > * + * {
+        margin-top: 1rem;
+    }
+    
+    .progress-sidebar .space-y-2 > * + * {
+        margin-top: 0.75rem;
+    }
+}
+
+/* Better visual separation on ultra-wide screens */
+@media (min-width: 1536px) {
+    .lg\:gap-6 {
+        gap: 2rem;
+    }
+    
+    .xl\:gap-8 {
+        gap: 2.5rem;
+    }
+}
+
+/* Grid container full-width */
+.lg\:grid-cols-\[280px\,1fr\,280px\],
+.xl\:grid-cols-\[320px\,1fr\,320px\] {
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-cols-\[280px\,1fr\,280px\] {
+        grid-template-columns: minmax(200px, 240px) minmax(0, 1fr) minmax(200px, 240px);
+    }
+}
+
+@media (min-width: 1280px) {
+    .xl\:grid-cols-\[320px\,1fr\,320px\] {
+        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(220px, 260px);
+    }
+}
+
+/* Main content area optimizations */
+@media (min-width: 1024px) {
+    main .space-y-8 {
+        max-width: none;
+    }
+    
+    /* Statistics cards responsive grid for full width */
+    main .grid-cols-1.sm\\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(200px, 1fr));
+    }
+}
+
+/* Statistics cards center alignment */
+.grid.grid-cols-1.sm\\:grid-cols-3 > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.grid.grid-cols-1.sm\\:grid-cols-3 > div h3,
+.grid.grid-cols-1.sm\\:grid-cols-3 > div p {
+    width: 100%;
+    text-align: center !important;
+}
+
+.summary-grid > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.summary-grid > div p {
+    width: 100%;
+    text-align: center !important;
+}
+
+.summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.summary-grid > div {
+    min-height: 110px;
+}
+
+.summary-grid > div p {
+    white-space: nowrap;
+}
+
+.summary-progress {
+    width: 100%;
+    max-width: 180px;
+}
+
+.course-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.6rem;
+    line-height: 1.4;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.2);
+    color: #1f2937;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.dark .course-badge {
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.45);
+}
+
+.course-badge--tuton {
+    background: rgba(37, 99, 235, 0.16);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.28);
+}
+
+.dark .course-badge--tuton {
+    background: rgba(37, 99, 235, 0.32);
+    color: #dbeafe;
+    border-color: rgba(59, 130, 246, 0.55);
+}
+
+.course-badge--tuweb {
+    background: rgba(168, 85, 247, 0.18);
+    color: #6d28d9;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.dark .course-badge--tuweb {
+    background: rgba(168, 85, 247, 0.35);
+    color: #ede9fe;
+    border-color: rgba(167, 139, 250, 0.6);
+}
+
+.course-badge--ttm {
+    background: rgba(16, 185, 129, 0.16);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.28);
+}
+
+.dark .course-badge--ttm {
+    background: rgba(16, 185, 129, 0.32);
+    color: #d1fae5;
+    border-color: rgba(52, 211, 153, 0.55);
+}
+
+.course-badge--berpraktik {
+    background: rgba(251, 146, 60, 0.2);
+    color: #c2410c;
+    border-color: rgba(251, 146, 60, 0.35);
+}
+
+.dark .course-badge--berpraktik {
+    background: rgba(251, 146, 60, 0.34);
+    color: #ffedd5;
+    border-color: rgba(251, 191, 36, 0.55);
+}
+
+.course-badge--berpraktikum {
+    background: rgba(245, 158, 11, 0.2);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.34);
+}
+
+.dark .course-badge--berpraktikum {
+    background: rgba(245, 158, 11, 0.34);
+    color: #fef3c7;
+    border-color: rgba(251, 191, 36, 0.55);
+}
+
+.course-badge--praktik {
+    background: rgba(20, 184, 166, 0.2);
+    color: #0f766e;
+    border-color: rgba(20, 184, 166, 0.34);
+}
+
+.dark .course-badge--praktik {
+    background: rgba(20, 184, 166, 0.34);
+    color: #ccfbf1;
+    border-color: rgba(45, 212, 191, 0.55);
+}
+
+.course-badge--praktikum {
+    background: rgba(6, 182, 212, 0.18);
+    color: #0e7490;
+    border-color: rgba(6, 182, 212, 0.32);
+}
+
+.dark .course-badge--praktikum {
+    background: rgba(6, 182, 212, 0.33);
+    color: #cffafe;
+    border-color: rgba(103, 232, 249, 0.55);
+}
+
+.course-badge--default {
+    background: rgba(100, 116, 139, 0.22);
+    color: #334155;
+    border-color: rgba(100, 116, 139, 0.35);
+}
+
+.dark .course-badge--default {
+    background: rgba(15, 23, 42, 0.75);
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.55);
+}
+
+.summary-progress-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.dark .summary-progress-track {
+    background: rgba(71, 85, 105, 0.7);
+}
+
+.summary-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    transition: width 0.4s ease;
+}
+
+.dark .summary-progress-fill {
+    background: linear-gradient(90deg, #60a5fa, #93c5fd);
+}
+
+/* Ensure perfect centering for statistics values */
+#total-mk,
+#total-sks,
+#total-ip {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+}
+
+/* Tutorial and Task Tables Center Alignment */
+.tracker-card table {
+    table-layout: fixed;
+}
+
+.tracker-card table th,
+.tracker-card table td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* Center align table headers */
+.tracker-card thead th {
+    text-align: center !important;
+    font-weight: 600;
+}
+
+/* Center align checkboxes */
+.tracker-card td input[type="checkbox"] {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Center align number inputs */
+.tracker-card td input[type="number"] {
+    text-align: center !important;
+    margin: 0 auto;
+}
+
+/* Center align text inputs but keep text left-aligned for readability */
+.tracker-card td input[type="text"] {
+    margin: 0 auto;
+}
+
+/* Specific column widths for better alignment */
+.tracker-card table th:first-child,
+.tracker-card table td:first-child {
+    width: 10%;
+    text-align: center !important;
+}
+
+.tracker-card table th:nth-child(2),
+.tracker-card table td:nth-child(2) {
+    width: 15%;
+    text-align: center !important;
+}
+
+.tracker-card table th:nth-child(3),
+.tracker-card table td:nth-child(3) {
+    width: 15%;
+    text-align: center !important;
+}
+
+.tracker-card table th:nth-child(4),
+.tracker-card table td:nth-child(4) {
+    width: 20%;
+    text-align: center !important;
+}
+
+.tracker-card table th:nth-child(5),
+.tracker-card table td:nth-child(5) {
+    width: 40%;
+}
+
+/* Special alignment for tutorial progress table */
+.tracker-card table thead th {
+    padding: 12px 8px;
+    text-align: center !important;
+}
+
+.tracker-card table tbody td {
+    padding: 12px 8px;
+    text-align: center !important;
+}
+
+/* Ensure input elements are centered within their cells */
+.tracker-card table td input {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Text inputs in notes/description columns should be full width but centered container */
+.tracker-card table td:last-child input[type="text"] {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+}
+
+/* Enhanced checkbox styling for better center alignment */
+.tracker-card input[type="checkbox"] {
+    accent-color: #3b82f6;
+    transform: scale(1.1);
+}
+
+/* Number input styling for perfect center alignment */
+.tracker-card input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.tracker-card input[type="number"]::-webkit-outer-spin-button,
+.tracker-card input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Module checkbox grid improvements */
+.tracker-card .grid.grid-cols-2 > div,
+.tracker-card .grid.sm\\:grid-cols-3 > div,
+.tracker-card .grid.md\\:grid-cols-4 > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Responsive table improvements */
+@media (max-width: 768px) {
+    .tracker-card table {
+        font-size: 0.875rem;
+    }
+    
+    .tracker-card table th,
+    .tracker-card table td {
+        padding: 8px 4px;
+    }
+    
+    .tracker-card table input[type="number"] {
+        width: 50px;
+        padding: 2px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .tracker-card table input[type="checkbox"] {
+        transform: scale(1);
+    }
+}
+
+/* Special styling for diskusi nilai input */
+.tracker-card input[type="number"].w-16 {
+    min-width: 50px;
+    max-width: 60px;
+}
+
+/* Datetime picker visibility improvements */
+input[type="datetime-local"] {
+    color: #1f2937;
+}
+
+.dark input[type="datetime-local"] {
+    background-color: rgba(30, 41, 59, 0.6);
+    color: #e2e8f0;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.35);
+}
+
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.1);
+}
+
+.dark input[type="datetime-local"]::-webkit-datetime-edit {
+    color: #e2e8f0;
+}
+
+/* Ensure 3-digit numbers fit properly */
+@media (min-width: 768px) {
+    .tracker-card input[type="number"].w-16 {
+        width: 64px;
+    }
+}
+
+@media (min-width: 1280px) {
+    /* Better spacing for form on wide screens */
+    .form-card .grid-cols-1.md\\:grid-cols-6 {
+        gap: 1.5rem;
+    }
+    
+    /* Optimize course cards spacing */
+    #courses-container .space-y-6 > * + * {
+        margin-top: 2rem;
+    }
+}
+
+/* Ensure proper content flow on very wide screens */
+@media (min-width: 1920px) {
+    main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
